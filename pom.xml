@@ -5,10 +5,18 @@
 
   <modelVersion>4.0.0</modelVersion>
 
+  <!--
+    Parent (aggregator) POM. It builds nothing itself; it only ties the modules together
+    and fixes the shared settings, so that "mvn test" and "mvn package" run from the
+    repository root cover everything.
+
+      core     the library that is handed over to the other team (class MyBigNumber)
+      console  a tiny command-line front end, only there to try the library out
+  -->
   <groupId>com.nguyenhuudung</groupId>
-  <artifactId>add2num</artifactId>
+  <artifactId>add2num-parent</artifactId>
   <version>0.0.1</version>
-  <packaging>jar</packaging>
+  <packaging>pom</packaging>
 
   <name>Add2Num</name>
   <description>
@@ -16,31 +24,32 @@
     without converting them to a numeric type.
   </description>
 
+  <modules>
+    <module>core</module>
+    <module>console</module>
+  </modules>
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.release>17</maven.compiler.release>
-    <junit.version>5.10.2</junit.version>
-    <surefire.version>3.2.5</surefire.version>
+    <junit.version>5.11.4</junit.version>
   </properties>
 
-  <dependencies>
-    <!-- Test only. The production code has no third-party dependency at all. -->
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter</artifactId>
-      <version>${junit.version}</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
-
   <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>${surefire.version}</version>
-      </plugin>
-    </plugins>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>3.5.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>3.4.2</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
   </build>
 
 </project>

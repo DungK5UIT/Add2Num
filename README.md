@@ -17,65 +17,100 @@ calculator.sum("1234", "897");   // "2131"
 
 ---
 
-## 1. Yêu cầu môi trường
+## 1. Cấu trúc project
+
+```
+Add2Num/
+├── pom.xml                        <- parent, gom các module lại
+├── README.md
+├── .gitignore
+├── core/                          <- PHẦN LÕI (core): thứ được đóng gói và bàn giao
+│   ├── pom.xml
+│   └── src/
+│       ├── main/java/com/nguyenhuudung/add2num/MyBigNumber.java
+│       └── test/java/com/nguyenhuudung/add2num/MyBigNumberTest.java
+└── console/                       <- chương trình dòng lệnh để chạy thử phần core
+    ├── pom.xml
+    └── src/main/java/com/nguyenhuudung/add2num/console/Add2NumConsole.java
+```
+
+| Thư mục | Vai trò |
+|---|---|
+| `core/` | Lớp riêng `MyBigNumber` với method `String sum(String stn1, String stn2)`, đúng như đề bài. Đây là thư viện được đóng gói thành `add2num-core-0.0.1.jar` để bàn giao. Không phụ thuộc thư viện bên thứ ba nào. |
+| `console/` | Đóng vai "nhóm khác làm giao diện (hoặc ứng dụng dạng console)" mà đề bài nhắc tới. Phụ thuộc vào `core` y như cách nhóm đó sẽ dùng. **Không** thuộc sản phẩm bàn giao. |
+
+Unit test nằm ở `core/src/test`, tức một thư mục riêng, tách khỏi mã nguồn chính
+`core/src/main` như đề bài khuyến khích, và không được đóng gói vào file jar bàn giao.
+
+`MyBigNumber` không in ra màn hình và không tự cấu hình logging — đó là việc của ứng dụng gọi
+nó. `Add2NumConsole` mới là nơi quyết định log hiển thị ra sao. Nhờ vậy phần lõi bàn giao cho
+nhóm khác mà không áp đặt gì lên họ.
+
+---
+
+## 2. Yêu cầu môi trường
 
 | Thành phần | Phiên bản | Bắt buộc? |
 |---|---|---|
 | JDK | 17 trở lên | Có |
-| Apache Maven | 3.8 trở lên | Không — xem Cách 2 bên dưới |
+| Apache Maven | 3.8 trở lên | Không — xem mục 3, cách 2 |
 
-Không cần cài thêm gì khác. Mã nguồn chính **không phụ thuộc thư viện bên thứ ba nào**;
-JUnit chỉ dùng ở phạm vi `test`.
+Không cần cài thêm gì khác. JUnit chỉ dùng ở phạm vi `test` của module `core`.
 
 ---
 
-## 2. Cách build và chạy test
+## 3. Cách build và chạy test
 
 ### Cách 1 — Maven (khuyên dùng)
 
+Chạy từ **thư mục gốc** của repo (nơi có file `pom.xml` ngoài cùng):
+
 ```bash
-mvn test        # biên dịch và chạy toàn bộ unit test
-mvn package     # tạo target/add2num-0.0.1.jar
+mvn test        # biên dịch cả hai module và chạy toàn bộ unit test của core
+mvn package     # tạo core/target/add2num-core-0.0.1.jar và console/target/add2num-console-0.0.1.jar
 ```
 
 Lần chạy đầu Maven sẽ tải JUnit về, nên máy cần vào được Maven Central.
 
-Chạy thử phần demo console:
-
-```bash
-mvn package
-java -cp target/classes com.nguyenhuudung.add2num.Add2NumDemo 1234 897
-```
-
 ### Cách 2 — Chỉ dùng JDK, không cần Maven
 
-Dùng khi máy không vào được Maven Central (mạng nội bộ chặn chẳng hạn). Cách này biên dịch và
-chạy được **mã nguồn chính**, không chạy unit test vì unit test cần JUnit.
+Dùng khi máy không vào được Maven Central. Cách này biên dịch và chạy được **mã nguồn chính**,
+không chạy unit test vì unit test cần JUnit. Chạy từ thư mục gốc của repo:
 
 ```bash
-# Windows (CMD hoặc PowerShell) - chạy từ thư mục gốc của project
-javac -d out src\main\java\com\nguyenhuudung\add2num\MyBigNumber.java src\main\java\com\nguyenhuudung\add2num\Add2NumDemo.java
-java -cp out com.nguyenhuudung.add2num.Add2NumDemo 1234 897
+# Windows (CMD hoặc PowerShell)
+javac -d out\core core\src\main\java\com\nguyenhuudung\add2num\MyBigNumber.java
+javac -cp out\core -d out\console console\src\main\java\com\nguyenhuudung\add2num\console\Add2NumConsole.java
+java -cp "out\core;out\console" com.nguyenhuudung.add2num.console.Add2NumConsole 1234 897
 ```
 
 ```bash
 # Linux / macOS
-javac -d out src/main/java/com/nguyenhuudung/add2num/MyBigNumber.java src/main/java/com/nguyenhuudung/add2num/Add2NumDemo.java
-java -cp out com.nguyenhuudung.add2num.Add2NumDemo 1234 897
+javac -d out/core core/src/main/java/com/nguyenhuudung/add2num/MyBigNumber.java
+javac -cp out/core -d out/console console/src/main/java/com/nguyenhuudung/add2num/console/Add2NumConsole.java
+java -cp out/core:out/console com.nguyenhuudung.add2num.console.Add2NumConsole 1234 897
 ```
 
-Hai file được liệt kê thẳng tên thay vì viết `*.java`, vì PowerShell không tự bung ký tự `*`
-ra thành danh sách file như bash.
-
-Gọi `Add2NumDemo` mà không truyền tham số thì chương trình chạy sẵn ví dụ trong đề bài.
-Truyền hai số bất kỳ để thử số khác, ví dụ `... Add2NumDemo 999 1`.
+Từng file được liệt kê thẳng tên thay vì viết `*.java`, vì PowerShell không tự bung ký tự `*`
+như bash.
 
 ---
 
-## 3. Kết quả chạy thực tế
+## 4. Chạy thử
+
+Sau `mvn package`, chạy chương trình console với hai file jar trên classpath:
+
+```bash
+# Windows
+java -cp "core\target\add2num-core-0.0.1.jar;console\target\add2num-console-0.0.1.jar" com.nguyenhuudung.add2num.console.Add2NumConsole 1234 897
+
+# Linux / macOS
+java -cp core/target/add2num-core-0.0.1.jar:console/target/add2num-console-0.0.1.jar com.nguyenhuudung.add2num.console.Add2NumConsole 1234 897
+```
+
+Kết quả:
 
 ```
-$ java -cp out com.nguyenhuudung.add2num.Add2NumDemo 1234 897
 [LOG] sum("1234", "897") - begin
 [LOG] step 1: 4 + 7 + carry 0 = 11 -> keep 1, carry 1
 [LOG] step 2: 3 + 9 + carry 1 = 13 -> keep 3, carry 1
@@ -88,34 +123,65 @@ Result: 2131
 Đối chiếu với ví dụ trong đề bài: bước 1 lấy 4 cộng 7 được 11, lưu 1 nhớ 1; bước 2 lấy 3 cộng 9
 được 12, cộng tiếp nhớ 1 được 13, lưu 3 nhớ 1. Khớp.
 
----
-
-## 4. Cấu trúc project
-
-```
-Add2Num/
-├── pom.xml
-├── README.md
-├── .gitignore
-└── src/
-    ├── main/java/com/nguyenhuudung/add2num/
-    │   ├── MyBigNumber.java     <- phần lõi (core) mà đề bài yêu cầu
-    │   └── Add2NumDemo.java     <- demo console, đóng vai "nhóm khác làm giao diện"
-    └── test/java/com/nguyenhuudung/add2num/
-        └── MyBigNumberTest.java <- unit test, nằm ở thư mục tách khỏi mã nguồn chính
-```
-
-Đề bài khuyến khích để unit test ở project hoặc thư mục khác với mã nguồn chính. Ở đây test nằm
-trong `src/test/java`, tách hoàn toàn khỏi `src/main/java` theo chuẩn Maven, và không được đóng
-gói vào file jar sản phẩm.
-
-`MyBigNumber` không tự cấu hình logging — đó là việc của ứng dụng gọi nó. `Add2NumDemo` mới là
-nơi quyết định log in ra như thế nào. Đây là lý do phần lõi có thể bàn giao cho nhóm khác mà
-không áp đặt gì lên họ.
+Đổi `1234 897` thành hai số bất kỳ để thử số khác. Không truyền tham số thì chương trình chạy
+sẵn ví dụ trong đề bài.
 
 ---
 
-## 5. Thuật toán
+## 5. Đóng gói và bàn giao cho nhóm khác
+
+Đề bài mô tả: *"Hàm này sẽ được đóng gói để bàn giao cho một nhóm khác làm giao diện (hoặc ứng
+dụng dạng console) để họ gọi hàm của bạn trong dự án lớn hơn."*
+
+Sản phẩm bàn giao là **một file duy nhất**: `core/target/add2num-core-0.0.1.jar`, sinh ra bởi
+`mvn package`. Nó chỉ chứa lớp `MyBigNumber`.
+
+**Cách 1 — qua Maven.** Từ thư mục gốc, cài các module vào kho local:
+
+```bash
+mvn install
+```
+
+Rồi dự án của nhóm kia khai báo dependency:
+
+```xml
+<dependency>
+  <groupId>com.nguyenhuudung</groupId>
+  <artifactId>add2num-core</artifactId>
+  <version>0.0.1</version>
+</dependency>
+```
+
+**Cách 2 — bỏ thẳng file jar vào classpath**, không cần Maven:
+
+```bash
+javac -cp add2num-core-0.0.1.jar -d out OtherTeamApp.java
+java  -cp add2num-core-0.0.1.jar:out OtherTeamApp        # Windows dùng dấu ; thay cho :
+```
+
+Dù theo cách nào, phía họ chỉ cần viết:
+
+```java
+import com.nguyenhuudung.add2num.MyBigNumber;
+
+public class OtherTeamApp {
+    public static void main(String[] args) {
+        MyBigNumber calculator = new MyBigNumber();
+        System.out.println("Tổng: " + calculator.sum("1234", "897"));   // Tổng: 2131
+    }
+}
+```
+
+Mặc định họ sẽ thấy lịch sử phép cộng in ra theo định dạng hai dòng có kèm thời gian của
+`java.util.logging`. Muốn tắt hẳn thì thêm một dòng, không phải sửa thư viện:
+
+```java
+Logger.getLogger(MyBigNumber.class.getName()).setLevel(Level.WARNING);
+```
+
+---
+
+## 6. Thuật toán
 
 ```
 i = độ dài stn1 - 1;  j = độ dài stn2 - 1;  nhớ = 0
@@ -139,7 +205,7 @@ Ba chi tiết quyết định tính đúng đắn:
 
 ---
 
-## 6. Giả định và các quyết định đã chốt
+## 7. Giả định và các quyết định đã chốt
 
 | # | Vấn đề | Quyết định |
 |---|---|---|
@@ -154,7 +220,7 @@ Ba chi tiết quyết định tính đúng đắn:
 
 ---
 
-## 7. Bộ unit test
+## 8. Bộ unit test
 
 `MyBigNumberTest` gồm 11 test, chia hai lớp.
 
@@ -182,14 +248,10 @@ người viết test thường không nghĩ tới.
 
 ---
 
-## 8. Phiên bản và cách nộp
+## 9. Phiên bản và cách nộp
 
 Phiên bản hoàn thành để đánh giá là **0.0.1**, đánh dấu bằng **git tag** `0.0.1`
 (đề bài cho phép dùng tag hoặc branch).
-
-> **Trước khi chạy:** thay `<tai-khoan-github>` bằng tài khoản GitHub thật của bạn.
-> Nếu muốn đổi tên package `com.nguyenhuudung` thì đổi đồng thời ở `pom.xml`
-> (`groupId`), dòng `package` trong 3 file `.java`, và tên thư mục dưới `src`.
 
 ```bash
 git init
@@ -197,7 +259,7 @@ git add .
 git commit -m "Add MyBigNumber.sum with unit tests and README"
 git branch -M main
 
-git remote add origin https://github.com/<tai-khoan-github>/Add2Num.git
+git remote add origin https://github.com/DungK5UIT/Add2Num.git
 git push -u origin main
 
 git tag 0.0.1
@@ -213,13 +275,13 @@ quy ước rồi chạy lại từ đầu theo README:
 
 ```bash
 # Windows
-git clone https://github.com/<tai-khoan-github>/Add2Num.git "D:\Projects\github.com\<tai-khoan-github>\Add2Num"
-cd "D:\Projects\github.com\<tai-khoan-github>\Add2Num"
+git clone https://github.com/DungK5UIT/Add2Num.git "D:\Projects\github.com\DungK5UIT\Add2Num"
+cd "D:\Projects\github.com\DungK5UIT\Add2Num"
 
 # macOS / Linux
-git clone https://github.com/<tai-khoan-github>/Add2Num.git ~/Projects/github.com/<tai-khoan-github>/Add2Num
-cd ~/Projects/github.com/<tai-khoan-github>/Add2Num
+git clone https://github.com/DungK5UIT/Add2Num.git ~/Projects/github.com/DungK5UIT/Add2Num
+cd ~/Projects/github.com/DungK5UIT/Add2Num
 ```
 
-Rồi chạy `mvn test` (hoặc Cách 2 ở mục 2) và đối chiếu với kết quả ở mục 3. Chạy được nghĩa là
+Rồi chạy `mvn test` (hoặc cách 2 ở mục 3) và đối chiếu với kết quả ở mục 4. Chạy được nghĩa là
 README đủ để người khác làm lại được.

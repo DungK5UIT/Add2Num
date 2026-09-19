@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.nguyenhuudung</groupId>
+    <artifactId>add2num-parent</artifactId>
+    <version>0.0.1</version>
+  </parent>
+
+  <!--
+    The deliverable. "mvn package" produces target/add2num-core-0.0.1.jar, which the other
+    team adds to their project and calls MyBigNumber.sum(). It has no third-party
+    dependency and no Main-Class: it is a library, not a program.
+  -->
+  <artifactId>add2num-core</artifactId>
+  <packaging>jar</packaging>
+
+  <name>Add2Num Core</name>
+  <description>MyBigNumber: adds two decimal strings the way a primary-school pupil does.</description>
+
+  <dependencies>
+    <!-- Test only. The production code has no third-party dependency at all. -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>
